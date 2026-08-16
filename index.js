@@ -2,23 +2,28 @@
 
 const express = require('express')
 const app = express()
-var morgan = require('morgan')
-
-const cors = require('cors')
-
-app.use(cors())
 
 app.use(express.static('dist'))
+
+app.use(express.json())
+
+var morgan = require('morgan')
+
 
 morgan.token('body', (req) => JSON.stringify(req.body))
 app.use(
   morgan(':method :url :status :res[content-length] - :response-time ms :body')
 )
 
+const cors = require('cors')
+
+app.use(cors())
+
+
 let persons = [
   {
     id: "1",
-    name: "Torspo",
+    name: "Torsppo",
     number: "1234456"
   },
   {
@@ -40,10 +45,14 @@ let persons = [
 
   {
     id: "5",
-    name: "Tuomo Tampio",
+    name: "Urho Miehelä",
     number: "13243578"
   },
 ]
+
+
+
+
 
 
 
@@ -96,8 +105,19 @@ app.post('/api/persons', (request, response) => {
     })
 
   }
-   
 
+   const samaNimi= persons.find(
+    p => p.name === person.name
+    
+  )
+
+  if (samaNimi) {
+    return response.status(400).json({ 
+      error: 'nimi on jo olemassa' 
+    })
+
+  }
+   
 
   
   person.id = Math.floor(Math.random() * 1000000).toString()
@@ -111,6 +131,7 @@ persons = persons.concat(person)
   response.json(person) 
 
 })
+
 
 
 
