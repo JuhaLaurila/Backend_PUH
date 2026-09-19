@@ -3,6 +3,9 @@ const express = require('express')
 const Person = require('./models/person')
 const app = express()
 
+
+
+
 app.use(express.static('dist'))
 app.use(express.json())
 
@@ -31,7 +34,10 @@ app.get('/api/persons/:id', (request, response, next) => {
         response.status(404).end()
       }
     })
-    .catch(error => next(error))
+       .catch(error => {
+      console.log(error)
+      response.status(400).send({ error: 'malformatted id' })
+    })
 })
 
 // Info-reitti
@@ -73,20 +79,25 @@ app.post('/api/persons', (request, response, next) => {
 app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
-  Person.findByIdAndUpdate(
-    request.params.id,
-    { name, number },
-    { new: true, runValidators: true, context: 'query' }
-  )
-    .then(updatedPerson => {
-      if (updatedPerson) {
-        response.json(updatedPerson)
-      } else {
-        response.status(404).end()
+  Person.findById(
+    request.params.id)
+    .then(person => {
+      if (!person) {
+        return response.status(404).end()
       }
+
+       person.name = name
+      person.number = number
+ 
+      return person.save().then(updatedPerson => {
+    
+      response.json(updatedPerson)
     })
-    .catch(error => next(error))
+    
 })
+.catch(error => next(error))
+})
+ 
 
 // Henkilön poisto (DELETE)
 app.delete('/api/persons/:id', (request, response, next) => {
