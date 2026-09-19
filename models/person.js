@@ -13,9 +13,11 @@ mongoose.connect(url, { family: 4 })
     console.log('error connecting to MongoDB:', error.message)
   })
 
+// 1. Määritellään schema
 const personSchema = new mongoose.Schema({
-  content: String,
-  important: Boolean,
+  name: String,
+  number: String,
+ 
 })
 
 personSchema.set('toJSON', {
@@ -25,5 +27,6 @@ personSchema.set('toJSON', {
     delete returnedObject.__v
   }
 })
+
 
 module.exports = mongoose.model('Person', personSchema)
