@@ -53,24 +53,21 @@ app.get('/info', (request, response, next) => {
 app.post('/api/persons', (request, response, next) => {
   const body = request.body
 
-  if (!body.name || !body.number) {
-    return response.status(400).json({ 
-      error: 'Nimi tai numero puuttuu' 
-    })
-  }
-
   const person = new Person({
     name: body.name,
-    number: body.number,
+    number: body.number
+
   })
-
-
 
   person.save()
     .then(savedPerson => {
       response.json(savedPerson)
     })
-})
+
+    .catch(error => next(error))
+    })
+ 
+
 
 // Henkilön numeron muokkaus (PUT) -> TÄMÄ PUUTTUI!
 app.put('/api/persons/:id', (request, response, next) => {
@@ -108,11 +105,13 @@ app.delete('/api/persons/:id', (request, response, next) => {
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
-  if (error.name === 'CastError') {
+  if ((error.name  || error.number)  === 'CastError') {
     return response.status(400).send({ error: 'Malformatted id' })
+ }
 
-
-  }
+else if ((error.name  || error.number)  === 'ValidationError') {
+    return response.status(400).send({ error: 'error.message' })
+ }
 
   next(error)
 }
