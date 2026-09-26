@@ -70,7 +70,7 @@ app.post('/api/persons', (request, response, next) => {
 
 
 // Henkilön numeron muokkaus (PUT) -> TÄMÄ PUUTTUI!
-app.put('/api/persons/:id', (request, response, next) => {
+/*app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
   Person.findById(request.params.id)
@@ -79,7 +79,6 @@ app.put('/api/persons/:id', (request, response, next) => {
         return response.status(404).end()
       }
 
-      
        person.name = name
       person.number = number
  
@@ -89,6 +88,24 @@ app.put('/api/persons/:id', (request, response, next) => {
     }) 
 })
 .catch(error => next(error))
+})*/
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const { name, number } = request.body
+
+  Person.findByIdAndUpdate(
+    request.params.id, 
+    { name, number }, 
+    { new: true, runValidators: true, context: 'query' }
+  )
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        response.json(updatedPerson)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
  
 
@@ -103,16 +120,45 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 // --- VIRHEENKÄSITTELY (MIDDLEWARE) ---
 
-const errorHandler = (error, request, response, next) => {
+/*const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
-  if ((error.name  || error.number)  === 'CastError') {
+
+   if ((error.name  || error.number)  === 'CastError') {
     return response.status(400).send({ error: 'Malformatted id' })
  }
 
-else if ((error.name  || error.number)  === 'ValidationError') {
-    return response.status(400).send({ error: 'error.message' })
+else if ((error.name)  === 'ValidationError') {
+    return response.status(400).send({ error: 'liian lyhyt nimi' })
  }
+
+ else if ((error.number)  === 'ValidationError') {
+    return response.status(400).send({ error: 'liian lyhyt numero' })
+ }
+
+  next(error)
+}*/
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'Malformatted id' })
+  } 
+  else if (error.name === 'ValidationError') {
+    // Tarkistetaan kumpaan kenttään virhe tuli error.errors-olion kautta
+
+     if (error.errors && error.errors.name) {
+      return response.status(400).send({ error: 'Liian lyhyt nimi (vaaditaan vähintään 3 merkkiä)' })
+    }
+    
+    if (error.errors && error.errors.number) {
+      return response.status(400).send({ error: 'Liian lyhyt numero (vaaditaan vähintään 8 merkkiä)' })
+    }
+   
+    // Yleinen varavaihtoehto, jos syy on jokin muu validointivirhe
+    return response.status(400).send({ error: error.message })
+  }
 
   next(error)
 }
