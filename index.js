@@ -4,8 +4,6 @@ const Person = require('./models/person')
 const app = express()
 
 
-
-
 app.use(express.static('dist'))
 app.use(express.json())
 
@@ -65,8 +63,7 @@ app.post('/api/persons', (request, response, next) => {
     })
 
     .catch(error => next(error))
-    })
- 
+})
 
 
 // Henkilön numeron muokkaus (PUT) -> TÄMÄ PUUTTUI!
@@ -81,11 +78,11 @@ app.post('/api/persons', (request, response, next) => {
 
        person.name = name
       person.number = number
- 
+
       return person.save().then(updatedPerson => {
-    
+
       response.json(updatedPerson)
-    }) 
+    })
 })
 .catch(error => next(error))
 })*/
@@ -94,8 +91,8 @@ app.put('/api/persons/:id', (request, response, next) => {
   const { name, number } = request.body
 
   Person.findByIdAndUpdate(
-    request.params.id, 
-    { name, number }, 
+    request.params.id,
+    { name, number },
     { new: true, runValidators: true, context: 'query' }
   )
     .then(updatedPerson => {
@@ -107,12 +104,12 @@ app.put('/api/persons/:id', (request, response, next) => {
     })
     .catch(error => next(error))
 })
- 
+
 
 // Henkilön poisto (DELETE)
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-    .then(result=> {
+    .then(result => {
       response.status(204).end()
     })
     .catch(error => next(error))
@@ -144,18 +141,18 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'Malformatted id' })
-  } 
+  }
   else if (error.name === 'ValidationError') {
     // Tarkistetaan kumpaan kenttään virhe tuli error.errors-olion kautta
 
-     if (error.errors && error.errors.name) {
+    if (error.errors && error.errors.name) {
       return response.status(400).send({ error: 'Liian lyhyt nimi (vaaditaan vähintään 3 merkkiä)' })
     }
-    
+
     if (error.errors && error.errors.number) {
       return response.status(400).send({ error: 'Liian lyhyt numero (vaaditaan vähintään 8 merkkiä)' })
     }
-   
+
     // Yleinen varavaihtoehto, jos syy on jokin muu validointivirhe
     return response.status(400).send({ error: error.message })
   }

@@ -18,7 +18,7 @@ const personSchema = new mongoose.Schema({
   important: Boolean,
 })
 
-// 2. Luodaan malli 
+// 2. Luodaan malli
 const Person = mongoose.model('Person', personSchema)
 
 // 3. LOGIIKKA: Jos argumentteja on vain salasana, tulostetaan kaikki
@@ -30,7 +30,7 @@ if (process.argv.length === 3) {
     })
     mongoose.connection.close()
   })
-} 
+}
 
 // 4. LOGIIKKA: Jos argumentteja on nimi ja numero, tallennetaan uusi
 if (process.argv.length > 3) {
